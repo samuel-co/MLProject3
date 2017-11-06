@@ -16,34 +16,45 @@ def create_population(shape, mu):
         #population[i][-1] = 0
     return population
 
-
 def evaluate(shape, population, data):
     ''' Tests the supplied data on each individual in the population, storing the overall
-        fitness of the netowork as the last element of each individual's array. '''
-    nn = NN.Network(shape)
+            fitness of the netowork as the last element of each individual's array. '''
     for individual in population:
-        counter = 0
-        for layer in nn.weights:
-            for node in layer:
-                for i in range(len(node)):
-                    node[i] = individual[counter]
-                    counter += 1
+        nn = build_network(shape, individual)
         individual[-1] = nn.test(data)
+
+def build_network(shape, individual):
+    ''' Builds a neural net of the input shape using the individual's array of weights. '''
+    nn = NN.Network(shape)
+    counter = 0
+    for layer in nn.weights:
+        for node in layer:
+            for i in range(len(node)):
+                node[i] = individual[counter]
+                counter += 1
+    return nn
 
 
 def tournament(population, number_possible_parents, number_parents):
     ''' Returns specified number of parents from the population using tournament selection.
         The commented out return can be used to return parents from a purely elitist selection. '''
+
     #return sorted(population, key=itemgetter(-1))[:number_parents]
 
     parents = []
     for i in range(number_parents):
-        possible_parents = []
-        for i in range(number_possible_parents):
-            possible_parents.append(random.choice(population))
-        possible_parents = sorted(possible_parents, key=itemgetter(-1))
-        parents.append(possible_parents[0])
+        parents.append(sorted(random.sample(population, number_possible_parents), key=itemgetter(-1))[0])
     return parents
+
+def tournament_unique(population, number_possible_parents, number_parents):
+    ''' Returns unique parents of parents from the population using tournament selection.
+        Returns , i.e. no parents can be selected more than once.'''
+
+    parents = []
+    for i in range(number_parents):
+        parents.append(sorted(random.sample(population, number_possible_parents), key=itemgetter(-1))[0])
+    return np.unique(parents, axis=0)
+
 
 def reproduce(parents, crossover_rate):
     ''' Creates children from each combination of supplied parents, preventing duplication

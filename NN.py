@@ -2,32 +2,12 @@ import numpy as np
 import math
 from random import shuffle
 
-
-def import_data(file_name):
-    ''' Imports data points from supplied file, formatting them into data point pairs to be
-        used by the algorithms. '''
-    fin = open(file_name, 'r')
-    input_line = fin.readline()
-    data = []
-
-    while input_line:
-        input_line = input_line.strip().split(',')
-        output_line = fin.readline().strip().split(',')
-        if input_line == [''] or output_line == ['']: break
-        for i in range(len(input_line)): input_line[i] = float(input_line[i])
-        for i in range(len(output_line)): output_line[i] = float(output_line[i])
-        data.append((input_line, output_line))
-        input_line = fin.readline()
-    fin.close()
-    return data
-
-
 # Sigmoid and linear activation functions. Returns respective derivative when field is True
 def sigmoid(x, derivative = False):
     if not derivative:
         # overflow error when -x <= -710
-        if x > 710: return 0
-        elif x < -709: return 1
+        if x > 709: x = 709
+        elif x < -709: x = -709
         else: return 1/ (1 + math.exp(-x))
     else:
         return x * (1.0 - x)
@@ -166,7 +146,6 @@ class Network:
                 print("Error at training iteration {} = {}".format(i, sum_error))
             if sum_error < 0.00001: break
 
-
     def test(self, data):
         ''' Returns the mean squared error of the network when tested on input data. '''
         sum_error = 0
@@ -193,40 +172,24 @@ class Network:
         #return sum_error / len(data)
 
 
-# -------------------Functionality below here is used for testing and configuration-------------------------------------
+def train(shape, iterations, data, learning_rate = 0.1, print_frequency = 250):
+    ''' Trains network on supplied data. Data input is a list of zipped input and target value lists. '''
 
-data1 = [([2.7810836, 2.550537003], [0]),
-           ([1.465489372, 2.362125076], [0]),
-           ([3.396561688, 4.400293529], [0]),
-           ([1.38807019, 1.850220317], [0]),
-           ([3.06407232, 3.005305973], [0]),
-           ([7.627531214, 2.759262235], [1]),
-           ([5.332441248, 2.088626775], [1]),
-           ([6.922596716, 1.77106367], [1]),
-           ([8.675418651, -0.242068655], [1]),
-           ([7.673756466, 3.508563011], [1])]
+    nn = Network(shape)
 
-
-data = [([0,0], [1,0]), ([1,1], [1,0]), ([0,1], [0,1]), ([1,0], [0,1])]
-
-
-def rosenbrock(x, y):
-    return (1 - x) ** 2 + 100 * ((y - x ** 2)) ** 2
-
-def create_data(num_points, min, max, dimensions = 2):
-    input_sets = [np.random.uniform(min, max, dimensions) for _ in range(num_points)]
-    data_set = []
-    for input in input_sets:
-        output = sum([rosenbrock(x, y) for x, y in zip(input[:-1], input[1:])])
-        data_set.append([input, [output]])
-    return data_set
-
-#dataset = create_data(10, -1, 1, 2)
-datai = import_data('iris.txt')
-
-dataset = datai
-
-#nn = Network([4,5,3])
-#nn.train(dataset, 1000)
-#nn.output_test(dataset)
-#print(nn.test(data))
+    lifetime_error = ['Neural Net {}'.format(shape)]
+    for i in range(iterations+1):
+        shuffle(data)
+        sum_error = 0
+        for input, target in data:
+            output = nn.forward_prop(input)
+            error = nn.back_prop(target, learning_rate)
+            sum_error += error
+            #if i%print_frequency == 0:
+            #    print('Iteration = {}, Error = {:.5f},  Target = {}, Output = {}'.format(i, error, target, output))
+        sum_error = sum_error / len(data)
+        lifetime_error.append(sum_error)
+        if i%print_frequency == 0:
+            print("Error at training iteration {} = {}".format(i, sum_error))
+        if sum_error < 0.00001: break
+    return nn, lifetime_error
