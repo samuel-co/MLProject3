@@ -6,8 +6,12 @@ from random import shuffle
 def sigmoid(x, derivative = False):
     if not derivative:
         # overflow error when -x <= -710
-        if x > 709: x = 709
-        elif x < -709: x = -709
+        if x > 709:
+            return 1
+            x = 709
+        elif x < -709:
+            return 0
+            x = -709
         else: return 1/ (1 + math.exp(-x))
     else:
         return x * (1.0 - x)
