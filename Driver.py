@@ -12,17 +12,24 @@ def import_data(file_name):
     fin = open(file_name, 'r')
     input_line = fin.readline()
     data = []
+    inputs = 0
+    outputs = 0
+    read_shape = False
 
     while input_line:
         input_line = input_line.strip().split(',')
         output_line = fin.readline().strip().split(',')
+        if not read_shape:
+            inputs = len(input_line)
+            outputs = len(output_line)
+            read_shape = True
         if input_line == [''] or output_line == ['']: break
         for i in range(len(input_line)): input_line[i] = float(input_line[i])
         for i in range(len(output_line)): output_line[i] = float(output_line[i])
         data.append((input_line, output_line))
         input_line = fin.readline()
     fin.close()
-    return data, os.path.splitext(file_name)[0][9:] # second return is file name, assumes file is in datasets/ directory
+    return data, inputs, outputs, os.path.splitext(file_name)[0][9:] # last return is file name, assumes file is in datasets/ directory
 
 def play_buzzer():
     import pygame
@@ -59,20 +66,25 @@ data = [([0,0], [1]), ([1,1], [1]), ([0,1], [0]), ([1,0], [0])]
 
 data2 = [([0,0], [1,0]), ([1,1], [1,0]), ([0,1], [0,1]), ([1,0], [0,1])]
 
-datai = import_data('datasets/iris.txt')
+#data_iris = import_data('datasets/iris.txt')
+#data_cmc = import_data('datasets/cmc.txt')
+#data_abalone = import_data('datasets/abalone.txt')
+data_airfoil = import_data('datasets/airfoilnoise.txt')
+#data_poker = import_data('datasets/pokerhand.txt')
+#data_yeast = import_data('datasets/yeast.txt')
 #dataset = create_data(10, -1, 1, 2)
 
 
-dataset, data_name = datai
+dataset, inputs, outputs, data_name = data_airfoil
 shuffle(dataset)
-shape = [4,5,3]
+shape = [inputs,12,12,outputs]
 k = 5   # cannot be larger than 6 without altering the figure's subplot layout
 
 slices = []
 length = int(len(dataset) / k)
 for i in range(k-1):
     slices.append(dataset[i*length:(i+1)*length])
-slices.append(dataset[4*length:])
+slices.append(dataset[(k-1)*length:])
 
 plot_count = 1
 fig = plt.figure(figsize=(14, 7))
@@ -82,8 +94,8 @@ for i in range(k):
     train_data = [j for i in slices for j in i]
     slices.append(test_data)
 
-    hero, lifetime_error = NN.train(shape=shape, iterations=10, data=train_data, learning_rate = 0.01, print_frequency=250)
-    #hero, lifetime_error = ES.train(shape=shape, mu=20, generations=10, number_possible_parents=5, number_parents=5, data=train_data, print_frequency=250)
+    #hero, lifetime_error = NN.train(shape=shape, iterations=2000, data=train_data, learning_rate = 0.01, print_frequency=5)
+    hero, lifetime_error = ES.train(shape=shape, mu=20, generations=2000, number_possible_parents=5, number_parents=5, quick=False, data=train_data, print_frequency=100)
 
     test_error = hero.test(test_data)
     print("Testing error on fold {} = {}".format(i+1, test_error))
@@ -99,7 +111,7 @@ for i in range(k):
 
 plt.tight_layout()
 fig.savefig('figures/' + lifetime_error[0] + ' on dataset {}'.format(data_name) + '.pdf')
-plt.show()
+#plt.show()
 
 #play_buzzer()
 

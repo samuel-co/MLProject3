@@ -37,7 +37,7 @@ def one_hot_encode(dict):
     return dict
 
 
-def process_file(name_in, name_out, nominal_columns, remove_column):
+def process_file(name_in, name_out, nominal_columns, remove_column, poker=False):
     ''' Takes input file of a csv or tsv format and formats the value into one-hot-encoding values, with the input
         values on one line, and their resulting class value on the next, all comma separated. '''
 
@@ -78,26 +78,31 @@ def process_file(name_in, name_out, nominal_columns, remove_column):
         else:
             encoder.append({}.copy())
 
+    if poker:
+        encoder[-1] = {'9': '1,0,0,0,0,0,0,0', '8': '0,1,0,0,0,0,0,0', '4': '0,0,1,0,0,0,0,0', '3': '0,0,0,1,0,0,0,0',
+                       '2': '0,0,0,0,1,0,0,0', '5': '0,0,0,0,0,1,0,0', '6': '0,0,0,0,0,0,1,0', '7': '0,0,0,0,0,0,0,1'}
+
     for line in data.split('\n'):
         line = line.split(',')
-        output = ''
-        # add the input values on a line
-        for i in range(len(line)-1):
-            if column_types[i]: output += '{},'.format(line[i])
-            elif line[i] != '': output += '{},'.format(encoder[i][line[i]])
-        fout.write(output[:-1] + '\n')
+        if not poker or (line[-1] != '0' and line[-1] != '1'):
+            output = ''
+            # add the input values on a line
+            for i in range(len(line)-1):
+                if column_types[i]: output += '{},'.format(line[i])
+                elif line[i] != '': output += '{},'.format(encoder[i][line[i]])
+            fout.write(output[:-1] + '\n')
 
-        # if real output
-        if column_types[-1]: fout.write('{}\n'.format(line[-1]))
-        # else encode class
-        elif line[-1] != '': fout.write('{}\n'.format(encoder[len(line)-1][line[-1]]))
+            # if real output
+            if column_types[-1]: fout.write('{}\n'.format(line[-1]))
+            # else encode class
+            elif line[-1] != '': fout.write('{}\n'.format(encoder[len(line)-1][line[-1]]))
 
     fin.close()
     fout.close()
 
 
-#process_file('pokerhand.csv', 'pokerhand.txt', [0,2,4,6,8,10],-1)
-#process_file('abalone.csv', 'abalone.txt', [], -1)
-#process_file('yeast.csv', 'yeast.txt', [], 0)
-#process_file('cmc.csv', 'cmc.txt', [1,2,6,7,9], -1)
-#process_file('airfoilnoise.csv', 'airfoilnoise.txt', [], -1)
+#process_file('datasets/pokerhand.csv', 'datasets/pokerhand.txt', [0,2,4,6,8,10],-1, True)
+#process_file('datasets/abalone.csv', 'datasets/abalone.txt', [], -1)
+#process_file('datasets/yeast.csv', 'datasets/yeast.txt', [], 0)
+#process_file('datasets/cmc.csv', 'datasets/cmc.txt', [1,2,6,7,9], -1)
+#process_file('datasets/airfoilnoise.csv', 'datasets/airfoilnoise.txt', [], -1)

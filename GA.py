@@ -16,9 +16,10 @@ def create_population(shape, mu):
         #population[i][-1] = 0
     return population
 
-def evaluate(shape, population, data):
+def evaluate(shape, population, data, quick=False):
     ''' Tests the supplied data on each individual in the population, storing the overall
             fitness of the netowork as the last element of each individual's array. '''
+    if quick: data = random.sample(data, int(len(data)/3))
     for individual in population:
         nn = build_network(shape, individual)
         individual[-1] = nn.test(data)
@@ -77,7 +78,6 @@ def crossover(parent1, parent2, crossover_rate):
             child1[i] = parent2[i]
             child2[i] = parent1[i]
     return child1, child2
-
 
 # Kendall everything i put in here i think you can reuse, not entirely sure though. You'll for sure need
 # at least a new mutate and train method, i think the ES ones may be similar
