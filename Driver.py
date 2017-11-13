@@ -1,6 +1,18 @@
-import ES
-import GA
+'''
+Sam Congdon, Kendall Dilorenzo, Michel Hewitt
+CSCI 447: MachineLearning
+Project 3: Driver
+November 13, 2017
+
+This python module handles the testing of the for neural net training algorithms. Tests data sets using k-fold
+cross validation, outputs the networks error throughout training and on the final test set on line graphs, one for
+each fold. Output can be saved to a PDF.
+'''
+
 import NN
+import GA
+import ES
+import DE
 import numpy as np
 import matplotlib.pyplot as plt
 from random import shuffle
@@ -32,6 +44,7 @@ def import_data(file_name):
     return data, inputs, outputs, os.path.splitext(file_name)[0][9:] # last return is file name, assumes file is in datasets/ directory
 
 def play_buzzer():
+    ''' Plays a buzzer, used during testing for completion alerts. '''
     import pygame
     pygame.init()
     song = pygame.mixer.Sound('buzzer.wav')
@@ -44,6 +57,8 @@ def rosenbrock(x, y):
     return (1 - x) ** 2 + 100 * ((y - x ** 2)) ** 2
 
 def create_data(num_points, min, max, dimensions = 2):
+    ''' Creates data points from the rosenbrock function, input desired number of points, range of points, and dimension
+        of the function. '''
     input_sets = [np.random.uniform(min, max, dimensions) for _ in range(num_points)]
     data_set = []
     for input in input_sets:
@@ -66,20 +81,22 @@ data = [([0,0], [1]), ([1,1], [1]), ([0,1], [0]), ([1,0], [0])]
 
 data2 = [([0,0], [1,0]), ([1,1], [1,0]), ([0,1], [0,1]), ([1,0], [0,1])]
 
-#data_iris = import_data('datasets/iris.txt')
+# load data sets from files
+data_iris = import_data('datasets/iris.txt')
 #data_cmc = import_data('datasets/cmc.txt')
 #data_abalone = import_data('datasets/abalone.txt')
-data_airfoil = import_data('datasets/airfoilnoise.txt')
+#data_airfoil = import_data('datasets/airfoilnoise.txt')
 #data_poker = import_data('datasets/pokerhand.txt')
 #data_yeast = import_data('datasets/yeast.txt')
 #dataset = create_data(10, -1, 1, 2)
 
-
-dataset, inputs, outputs, data_name = data_airfoil
+# alter these parameters for general testing
+dataset, inputs, outputs, data_name = data_iris
 shuffle(dataset)
-shape = [inputs,12,12,outputs]
+shape = [inputs,25,25,outputs]
 k = 5   # cannot be larger than 6 without altering the figure's subplot layout
 
+# create folds for cross validation
 slices = []
 length = int(len(dataset) / k)
 for i in range(k-1):
@@ -89,17 +106,22 @@ slices.append(dataset[(k-1)*length:])
 plot_count = 1
 fig = plt.figure(figsize=(14, 7))
 
+# for each fold, rotates through testing sets
 for i in range(k):
     test_data = slices.pop(0)
     train_data = [j for i in slices for j in i]
     slices.append(test_data)
 
-    #hero, lifetime_error = NN.train(shape=shape, iterations=2000, data=train_data, learning_rate = 0.01, print_frequency=5)
-    hero, lifetime_error = ES.train(shape=shape, mu=20, generations=2000, number_possible_parents=5, number_parents=5, quick=False, data=train_data, print_frequency=100)
+    # train network, receive error throughout training and the trained network. Uncomment line to train a network
+    hero, lifetime_error = NN.train(shape=shape, iterations=2000, data=train_data, learning_rate = 0.01, print_frequency=100)
+    #hero, lifetime_error = GA.train(shape=shape, mu=15, generations=2000, number_possible_parents=4, number_parents=4, quick=False, data=train_data, print_frequency=100)
+    #hero, lifetime_error = ES.train(shape=shape, mu=25, generations=2000, number_possible_parents=5, number_parents=5, quick=False, data=train_data, print_frequency=100)
+    #hero, lifetime_error = DE.train(shape=shape, mu=20, generations=2000, data=train_data, print_frequency=100)
 
     test_error = hero.test(test_data)
     print("Testing error on fold {} = {}".format(i+1, test_error))
 
+    # adds the fold's graph to the output figure
     fig.add_subplot(230+plot_count)
     plot_count += 1
     plt.title(lifetime_error[0] + ' on dataset {}'.format(data_name))
@@ -114,5 +136,4 @@ fig.savefig('figures/' + lifetime_error[0] + ' on dataset {}'.format(data_name) 
 #plt.show()
 
 #play_buzzer()
-
 

@@ -1,3 +1,14 @@
+'''
+Sam Congdon, Kendall Dilorenzo, Michel Hewitt
+CSCI 447: MachineLearning
+Project 3: Neural Network
+November 13, 2017
+
+This python module is used to create Neural Networks, and provides functionality for forward propagating, testing, and
+training. Training uses back propagation to return. Networks is currently set for logarithmic activation functions, with
+linear activated outputs.
+'''
+
 import numpy as np
 import math
 from random import shuffle
@@ -6,12 +17,8 @@ from random import shuffle
 def sigmoid(x, derivative = False):
     if not derivative:
         # overflow error when -x <= -710
-        if x > 709:
-            return 1
-            x = 709
-        elif x < -709:
-            return 0
-            x = -709
+        if x > 709: return 1
+        elif x < -709: return 0
         else: return 1/ (1 + math.exp(-x))
     else:
         return x * (1.0 - x)
@@ -148,7 +155,7 @@ class Network:
             sum_error = sum_error / len(data)
             if i%print_frequency == 0:
                 print("Error at training iteration {} = {}".format(i, sum_error))
-            if sum_error < 0.00001: break
+            if sum_error < 0.0001: break
 
     def test(self, data):
         ''' Returns the mean squared error of the network when tested on input data. '''

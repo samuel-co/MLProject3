@@ -1,4 +1,13 @@
-import NN
+'''
+Sam Congdon, Kendall Dilorenzo, Michel Hewitt
+CSCI 447: MachineLearning
+Project 3: (mu + lambda) Evolution Strategy
+November 13, 2017
+
+This python module is used to train a neural network using the (mu + lambda) Evolution Strategy. Uses crossover,
+create_population, evaluation, tournament_unique, and reproduce functions from GA.
+'''
+
 import GA
 import numpy as np
 from operator import itemgetter
