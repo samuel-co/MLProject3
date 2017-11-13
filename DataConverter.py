@@ -1,5 +1,12 @@
+'''
+Sam Congdon, Kendall Dilorenzo, Michel Hewitt
+CSCI 447: MachineLearning
+Project 3: Data Converter
+November 13, 2017
 
-
+This python module is used to convert csv or tsv data files into formats usable for the associated networks. Data is
+one-hot-encoded when applicable, with inputs on one line and output on the next.
+'''
 
 import re
 
@@ -78,6 +85,7 @@ def process_file(name_in, name_out, nominal_columns, remove_column, poker=False)
         else:
             encoder.append({}.copy())
 
+    # special case of the pokerhand dataset, used to parse the data down to approximately 1900 points
     if poker:
         encoder[-1] = {'9': '1,0,0,0,0,0,0,0', '8': '0,1,0,0,0,0,0,0', '4': '0,0,1,0,0,0,0,0', '3': '0,0,0,1,0,0,0,0',
                        '2': '0,0,0,0,1,0,0,0', '5': '0,0,0,0,0,1,0,0', '6': '0,0,0,0,0,0,1,0', '7': '0,0,0,0,0,0,0,1'}
@@ -101,8 +109,8 @@ def process_file(name_in, name_out, nominal_columns, remove_column, poker=False)
     fout.close()
 
 
-#process_file('datasets/pokerhand.csv', 'datasets/pokerhand.txt', [0,2,4,6,8,10],-1, True)
-#process_file('datasets/abalone.csv', 'datasets/abalone.txt', [], -1)
-#process_file('datasets/yeast.csv', 'datasets/yeast.txt', [], 0)
-#process_file('datasets/cmc.csv', 'datasets/cmc.txt', [1,2,6,7,9], -1)
-#process_file('datasets/airfoilnoise.csv', 'datasets/airfoilnoise.txt', [], -1)
+process_file('datasets/pokerhand.csv', 'datasets/pokerhand.txt', [0,2,4,6,8,10],-1, True)
+process_file('datasets/abalone.csv', 'datasets/abalone.txt', [], -1)
+process_file('datasets/yeast.csv', 'datasets/yeast.txt', [], 0)
+process_file('datasets/cmc.csv', 'datasets/cmc.txt', [1,2,6,7,9], -1)
+process_file('datasets/airfoilnoise.csv', 'datasets/airfoilnoise.txt', [], -1)
